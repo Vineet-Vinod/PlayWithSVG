@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Play With SVG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body
+    class="bg-gray-800 flex flex-row items-center justify-center h-screen w-screen"
+  >
+    <svg id="svg_content" class="grow h-full w-0.45" viewbox="0 0 720 720">
+      <rect
+        x="60"
+        y="100"
+        width="1080"
+        height="1000"
+        rx="100"
+        fill="none"
+        stroke="rgb(0 255 255)"
+        stroke-width="5"
+      />
+    </svg>
+    <div
+      id="resize"
+      class="grow h-full w-1 bg-gray-700 hover:bg-gray-500 cursor-ew-resize"
+    >
+      <div
+        class="w-full h-full flex items-center justify-center text-white"
+      ></div>
+    </div>
+    <div id="container" class="grow h-full w-0.45"></div>
+
+    <!--Load Monaco Text Editor-->
+    <script src="https://unpkg.com/monaco-editor@latest/min/vs/loader.js"></script>
+    <script>
+      require.config({
+        paths: {
+          vs: "https://unpkg.com/monaco-editor@latest/min/vs",
+        },
+      });
+
+      require(["vs/editor/editor.main"], function () {
+        const editor = monaco.editor.create(
+          document.getElementById("container"),
+          {
+            value: `<!--The svg viewbox is set as 0 0 720 720--> 
+
+<rect
+    x="60"
+    y="100"
+    width="1080"
+    height="1000"
+    rx="100"
+    fill="none"
+    stroke="rgb(0 255 255)"
+    stroke-width="5"
+/>`,
+            language: "html",
+            theme: "vs-dark",
+            automaticLayout: true,
+          }
+        );
+
+        const svg_container = document.getElementById("svg_content");
+        const editor_container = document.getElementById("container");
+        const resize = document.getElementById("resize");
+        document.addEventListener("keydown", (event) => {
+          if (event.ctrlKey && event.key === "s") {
+            event.preventDefault();
+            console.log(editor.getValue());
+            svg_container.innerHTML = editor.getValue();
+          }
+        });
+
+        resize.addEventListener("mousedown", function (e) {
+          e.preventDefault();
+          let startX = e.clientX;
+          let startWidth = parseInt(
+            document.defaultView.getComputedStyle(svg_container).width,
+            10
+          );
+          let startEditorWidth = parseInt(
+            document.defaultView.getComputedStyle(editor_container).width,
+            10
+          );
+
+          function doDrag(e) {
+            let diffX = e.clientX - startX;
+            svg_container.style.width = startWidth + diffX + "px";
+            editor_container.style.width = startEditorWidth - diffX + "px";
+          }
+
+          function stopDrag() {
+            document.removeEventListener("mousemove", doDrag, false);
+            document.removeEventListener("mouseup", stopDrag, false);
+          }
+
+          document.addEventListener("mousemove", doDrag, false);
+          document.addEventListener("mouseup", stopDrag, false);
+        });
+      });
+    </script>
+  </body>
+</html>
