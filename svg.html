@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+i<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -9,15 +9,28 @@
   <body
     class="bg-gray-800 flex flex-row items-center justify-center h-screen w-screen"
   >
-    <svg id="svg_content" class="grow h-full w-1/2" viewbox="0 0 720 720">
+    <svg id="svg_content" class="grow h-full w-0.45" viewbox="0 0 720 720">
+      <style>
+        @keyframes casinoLights {
+          to {
+            stroke-dashoffset: -26;
+          }
+        }
+
+        rect {
+          stroke-dasharray: 13 13;
+          animation: casinoLights 400ms linear infinite;
+        }
+      </style>
+
       <rect
-        x="60"
-        y="100"
-        width="1080"
-        height="1000"
-        rx="100"
+        x="200"
+        y="200"
+        width="300"
+        height="200"
+        rx="10"
         fill="none"
-        stroke="rgb(0 255 255)"
+        stroke="oklch(0.9 0.25 164)"
         stroke-width="5"
       />
     </svg>
@@ -29,7 +42,7 @@
         class="w-full h-full flex items-center justify-center text-white"
       ></div>
     </div>
-    <div id="container" class="grow h-full w-1/2"></div>
+    <div id="container" class="grow h-full w-0.45"></div>
 
     <!--Load Monaco Text Editor-->
     <script src="https://unpkg.com/monaco-editor@latest/min/vs/loader.js"></script>
@@ -46,14 +59,27 @@
           {
             value: `<!--The svg viewbox is set as 0 0 720 720--> 
 
+<style>
+@keyframes casinoLights {
+    to {
+    stroke-dashoffset: -26;
+    }
+}
+
+rect {
+    stroke-dasharray: 13 13;
+    animation: casinoLights 400ms linear infinite;
+}
+</style>
+
 <rect
-    x="60"
-    y="100"
-    width="1080"
-    height="1000"
-    rx="100"
+    x="200"
+    y="200"
+    width="300"
+    height="200"
+    rx="10"
     fill="none"
-    stroke="rgb(0 255 255)"
+    stroke="oklch(0.9 0.25 164)"
     stroke-width="5"
 />`,
             language: "html",
