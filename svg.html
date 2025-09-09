@@ -9,7 +9,7 @@ i<!DOCTYPE html>
   <body
     class="bg-gray-800 flex flex-row items-center justify-center h-screen w-screen"
   >
-    <svg id="svgContent" class="grow h-full w-1/2" viewbox="0 0 720 720" style="overflow: hidden;">
+    <svg id="svgContent" class="grow h-full w-1/2" viewBox="0 0 720 720" style="overflow: hidden;" xmlns="http://www.w3.org/2000/svg">
       <style>
         @keyframes casinoLights {
           to {
@@ -46,6 +46,8 @@ i<!DOCTYPE html>
 
     <!--Load Monaco Text Editor-->
     <script src="https://unpkg.com/monaco-editor@latest/min/vs/loader.js"></script>
+    <!-- Need to add DOMPurify to sanitize input -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/dompurify.min.js"></script> -->
     <script src="script.js"></script>
   </body>
 </html>

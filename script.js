@@ -37,10 +37,35 @@ rect {
   const svgContainer = document.getElementById("svgContent");
   const editorContainer = document.getElementById("container");
   const resize = document.getElementById("resize");
-  document.addEventListener("keydown", (event) => {
-    if (event.ctrlKey && event.key === "s") {
-      event.preventDefault();
-      svgContainer.innerHTML = editor.getValue();
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && (e.key === "s" || e.key === "S")) {
+      e.preventDefault();
+      const sanitizedSVG = editor.getValue(); // DOMPurify.sanitize(editor.getValue());
+      svgContainer.innerHTML = sanitizedSVG;
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && e.shiftKey && (e.key === "S" || e.key === "s")) {
+      e.preventDefault();
+
+      const { x, y, width, height } = svgContainer.viewBox.baseVal;
+      const fileContent = `<svg viewBox="${x} ${y} ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
+${editor.getValue()}
+</svg>`;
+
+      const blob = new Blob([fileContent], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = "image.svg";
+      document.body.appendChild(a);
+
+      a.click();
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
     }
   });
 
