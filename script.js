@@ -6,9 +6,7 @@ require.config({
 
 require(["vs/editor/editor.main"], function () {
   const editor = monaco.editor.create(document.getElementById("container"), {
-    value: `<!--The svg viewbox is set as 0 0 720 720--> 
-
-<style>
+    value: `<style>
 @keyframes casinoLights {
     to {
     stroke-dashoffset: -26;
@@ -36,14 +34,13 @@ rect {
     automaticLayout: true,
   });
 
-  const svg_container = document.getElementById("svg_content");
-  const editor_container = document.getElementById("container");
+  const svgContainer = document.getElementById("svgContent");
+  const editorContainer = document.getElementById("container");
   const resize = document.getElementById("resize");
   document.addEventListener("keydown", (event) => {
     if (event.ctrlKey && event.key === "s") {
       event.preventDefault();
-      console.log(editor.getValue());
-      svg_container.innerHTML = editor.getValue();
+      svgContainer.innerHTML = editor.getValue();
     }
   });
 
@@ -51,26 +48,26 @@ rect {
     e.preventDefault();
     let startX = e.clientX;
     let startWidth = parseInt(
-      document.defaultView.getComputedStyle(svg_container).width,
+      document.defaultView.getComputedStyle(svgContainer).width,
       10
     );
     let startEditorWidth = parseInt(
-      document.defaultView.getComputedStyle(editor_container).width,
+      document.defaultView.getComputedStyle(editorContainer).width,
       10
     );
 
     function doDrag(e) {
       let diffX = e.clientX - startX;
-      const total_width = window.innerWidth;
-      svg_container.style.width =
+      const totalWidth = window.innerWidth;
+      svgContainer.style.width =
         Math.min(
-          total_width * 0.9,
-          Math.max(total_width * 0.1, startWidth + diffX)
+          totalWidth * 0.9,
+          Math.max(totalWidth * 0.1, startWidth + diffX)
         ) + "px";
-      editor_container.style.width =
+      editorContainer.style.width =
         Math.min(
-          total_width * 0.9,
-          Math.max(total_width * 0.1, startEditorWidth - diffX)
+          totalWidth * 0.9,
+          Math.max(totalWidth * 0.1, startEditorWidth - diffX)
         ) + "px";
     }
 
@@ -84,41 +81,96 @@ rect {
   });
 
   let initialDistance = 0;
-  let orig_width = 1;
-  let orig_height = 1;
-  let orig_x = 0;
-  let orig_y = 0;
+  let origWidth = 1;
+  let origHeight = 1;
+  let origX = 0;
+  let origY = 0;
 
-  svg_container.addEventListener("touchstart", (e) => {
+  svgContainer.addEventListener("touchstart", (e) => {
     if (e.touches.length === 2) {
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       initialDistance = getDistance(touch1, touch2);
 
-      let { x, y, width, height } = svg_container.viewBox.baseVal;
-      orig_x = x;
-      orig_y = y;
-      orig_width = width;
-      orig_height = height;
-      console.log(orig_height, orig_width, initialDistance);
+      let { x, y, width, height } = svgContainer.viewBox.baseVal;
+      origX = x;
+      origY = y;
+      origWidth = width;
+      origHeight = height;
     }
   });
 
-  svg_container.addEventListener("touchmove", (e) => {
+  svgContainer.addEventListener("touchmove", (e) => {
     if (e.touches.length === 2) {
       e.preventDefault();
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const newDistance = getDistance(touch1, touch2);
-      
-      const newScale = initialDistance > newDistance ? Math.min(10, initialDistance / newDistance) : Math.max(0.1, initialDistance / newDistance);
-      console.log(orig_width * newScale, orig_height * newScale, initialDistance, newDistance);
 
-      svg_container.setAttribute(
+      const zoomFactor =
+        initialDistance > newDistance
+          ? Math.min(10, initialDistance / newDistance)
+          : Math.max(0.1, initialDistance / newDistance);
+
+      const svgPoint = getSVGPoint(getMidpoint(touch1, touch2));
+      const newX = svgPoint.x - (svgPoint.x - origX) * zoomFactor;
+      const newY = svgPoint.y - (svgPoint.y - origY) * zoomFactor;
+      svgContainer.setAttribute(
         "viewBox",
-        `${orig_x} ${orig_y} ${orig_width * newScale} ${orig_height * newScale}`
+        `${newX} ${newY} ${origWidth * zoomFactor} ${origHeight * zoomFactor}`
       );
     }
+  });
+
+  svgContainer.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    let { x, y, width, height } = svgContainer.viewBox.baseVal;
+    const svgPoint = getSVGPoint([e.clientX, e.clientY]);
+    let zoomFactor = 0.95;
+    let newWidth = width;
+    let newHeight = height;
+
+    if (e.deltaY < 0) {
+      zoomFactor = 1 / zoomFactor;
+    }
+    newWidth = width * zoomFactor;
+    newHeight = height * zoomFactor;
+
+    const newX = svgPoint.x - (svgPoint.x - x) * zoomFactor;
+    const newY = svgPoint.y - (svgPoint.y - y) * zoomFactor;
+    svgContainer.setAttribute(
+      "viewBox",
+      `${newX} ${newY} ${newWidth} ${newHeight}`
+    );
+  });
+
+  svgContainer.addEventListener("mousedown", function (e) {
+    e.preventDefault();
+    const startSvgPoint = getSVGPoint([e.clientX, e.clientY]);
+    let { x, y, width, height } = svgContainer.viewBox.baseVal;
+    origX = x;
+    origY = y;
+    origWidth = width;
+    origHeight = height;
+
+    function translate(e) {
+      const currSvgPoint = getSVGPoint([e.clientX, e.clientY]);
+      const diffX = currSvgPoint.x - startSvgPoint.x;
+      const diffY = currSvgPoint.y - startSvgPoint.y;
+
+      svgContainer.setAttribute(
+        "viewBox",
+        `${origX - diffX} ${origY - diffY} ${origWidth} ${origHeight}`
+      );
+    }
+
+    function stoptranslate() {
+      document.removeEventListener("mousemove", translate, false);
+      document.removeEventListener("mouseup", stoptranslate, false);
+    }
+
+    document.addEventListener("mousemove", translate, false);
+    document.addEventListener("mouseup", stoptranslate, false);
   });
 
   function getDistance(touch1, touch2) {
@@ -126,24 +178,23 @@ rect {
     const dy = touch1.clientY - touch2.clientY;
     return Math.sqrt(dx * dx + dy * dy);
   }
-  
-  svg_container.addEventListener("wheel", (e) => {
-    e.preventDefault();
 
-    let { x, y, width, height } = svg_container.viewBox.baseVal;
+  function getMidpoint(touch1, touch2) {
+    const midx = (touch1.clientX + touch2.clientX) / 2;
+    const midy = (touch1.clientY + touch2.clientY) / 2;
+    return [midx, midy];
+  }
 
-    let zoomFactor = 1.05;
-    let newWidth = width;
-    let newHeight = height;
+  function getSVGPoint([clientX, clientY]) {
+    const svgPoint = svgContainer.createSVGPoint();
+    svgPoint.x = clientX;
+    svgPoint.y = clientY;
 
-    if (e.deltaY < 0) {
-      newWidth = width / zoomFactor;
-      newHeight = height / zoomFactor;
-    } else {
-      newWidth = width * zoomFactor;
-      newHeight = height * zoomFactor;
-    }
-
-    svg_container.setAttribute("viewBox", `${x} ${y} ${newWidth} ${newHeight}`);
-  });
+    // Get the transformation matrix from the SVG
+    // CTM is the matrix transform applied to convert SVG
+    // coordinates to screen coordinates
+    // .inverse() inverts the matrix for the reverse transform
+    const CTM = svgContainer.getScreenCTM().inverse();
+    return svgPoint.matrixTransform(CTM);
+  }
 });
