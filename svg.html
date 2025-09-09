@@ -9,7 +9,7 @@ i<!DOCTYPE html>
   <body
     class="bg-gray-800 flex flex-row items-center justify-center h-screen w-screen"
   >
-    <svg id="svg_content" class="grow h-full w-0.45" viewbox="0 0 720 720">
+    <svg id="svg_content" class="grow h-full w-1/2" viewbox="0 0 720 720" style="overflow: hidden;">
       <style>
         @keyframes casinoLights {
           to {
@@ -42,90 +42,10 @@ i<!DOCTYPE html>
         class="w-full h-full flex items-center justify-center text-white"
       ></div>
     </div>
-    <div id="container" class="grow h-full w-0.45"></div>
+    <div id="container" class="grow h-full w-1/2"></div>
 
     <!--Load Monaco Text Editor-->
     <script src="https://unpkg.com/monaco-editor@latest/min/vs/loader.js"></script>
-    <script>
-      require.config({
-        paths: {
-          vs: "https://unpkg.com/monaco-editor@latest/min/vs",
-        },
-      });
-
-      require(["vs/editor/editor.main"], function () {
-        const editor = monaco.editor.create(
-          document.getElementById("container"),
-          {
-            value: `<!--The svg viewbox is set as 0 0 720 720--> 
-
-<style>
-@keyframes casinoLights {
-    to {
-    stroke-dashoffset: -26;
-    }
-}
-
-rect {
-    stroke-dasharray: 13 13;
-    animation: casinoLights 400ms linear infinite;
-}
-</style>
-
-<rect
-    x="200"
-    y="200"
-    width="300"
-    height="200"
-    rx="10"
-    fill="none"
-    stroke="oklch(0.9 0.25 164)"
-    stroke-width="5"
-/>`,
-            language: "html",
-            theme: "vs-dark",
-            automaticLayout: true,
-          }
-        );
-
-        const svg_container = document.getElementById("svg_content");
-        const editor_container = document.getElementById("container");
-        const resize = document.getElementById("resize");
-        document.addEventListener("keydown", (event) => {
-          if (event.ctrlKey && event.key === "s") {
-            event.preventDefault();
-            console.log(editor.getValue());
-            svg_container.innerHTML = editor.getValue();
-          }
-        });
-
-        resize.addEventListener("mousedown", function (e) {
-          e.preventDefault();
-          let startX = e.clientX;
-          let startWidth = parseInt(
-            document.defaultView.getComputedStyle(svg_container).width,
-            10
-          );
-          let startEditorWidth = parseInt(
-            document.defaultView.getComputedStyle(editor_container).width,
-            10
-          );
-
-          function doDrag(e) {
-            let diffX = e.clientX - startX;
-            svg_container.style.width = startWidth + diffX + "px";
-            editor_container.style.width = startEditorWidth - diffX + "px";
-          }
-
-          function stopDrag() {
-            document.removeEventListener("mousemove", doDrag, false);
-            document.removeEventListener("mouseup", stopDrag, false);
-          }
-
-          document.addEventListener("mousemove", doDrag, false);
-          document.addEventListener("mouseup", stopDrag, false);
-        });
-      });
-    </script>
+    <script src="script.js"></script>
   </body>
 </html>
